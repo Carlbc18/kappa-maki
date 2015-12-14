@@ -64,18 +64,22 @@ module SupportCode_NamespacedSteps
 
     # Instantiate the feature steps class for the duration of the scenario, if not already.
     # Instance variables will be scoped therein, and only usable for the life of the scenario.
-    if Cucumber::Features.const_defined?(feature_namespace)
-      feature_class = Cucumber::Features.const_get(feature_namespace)
-      @feature ||= feature_class.new
+    begin
+      if Cucumber::Features.const_defined?(feature_namespace)
+        feature_class = Cucumber::Features.const_get(feature_namespace)
+        @feature ||= feature_class.new
 
-      begin
-        # Local (namespaced) step definitions override global ones, if both are defined.
-        step_match(feature_class.namespace_step(test_step.name))
-      rescue Cucumber::Undefined
+        begin
+          # Local (namespaced) step definitions override global ones, if both are defined.
+          step_match(feature_class.namespace_step(test_step.name))
+        rescue Cucumber::Undefined
+          super
+        end
+      else
         super
       end
-    else
-      super
+    rescue NameError => e
+      raise e
     end
   end
 end
